@@ -36,8 +36,19 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _localIpAddress = "";
     [ObservableProperty] private string _statusMessage = "Ready for Start";
     [ObservableProperty] private bool _isStreaming = false;
+   
     [ObservableProperty]
     private bool _isBusy = false;
+
+    [ObservableProperty]
+    private bool _isUpdateAvailable;
+
+    [ObservableProperty]
+    private string _latestVersionText = string.Empty;
+
+    private string _downloadUrl = string.Empty;
+
+    private string _version = "";
 
    public MainWindowViewModel()
     {
@@ -45,11 +56,14 @@ public partial class MainWindowViewModel : ViewModelBase
         // Produktname aus <Product> holen
         var title = assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? "C64U Slim-Viewer";
             // Version aus <Version> holen (gekürzt auf 3 Stellen, z.B. 1.0.0)
-        var version = assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+        _version = assembly.GetName().Version?.ToString(3) ?? "1.0.0";
             // Autor/Firma aus <Authors> (wird in AssemblyCompany gemappt)
         var author = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "Grütze-Software";
-        AppTitle = $"{title} v{version} by {author}";
+        AppTitle = $"{title} v{_version} by {author}";
 
+        // Die Prüfung läuft im Hintergrund, damit das Fenster sofort erscheint
+        Task.Run(async () => await CheckVersionAsync());
+        
         // 1. Initialisierung
         ClearScreen();
         var settings = AppSettings.Load();
@@ -93,6 +107,27 @@ public partial class MainWindowViewModel : ViewModelBase
         // Den Port sofort zu öffnen ist unter Linux korrekt, damit der Socket bereit ist.
         _streamService.InitializeAndListen(11000); 
         StatusMessage = "Ready for Start";
+    }
+
+    public async Task CheckVersionAsync()
+    {
+        var service = new UpdateService(_version);
+        var (available, url, version) = await service.CheckForUpdates();
+        
+        if (available)
+        {
+            _downloadUrl = url;
+            LatestVersionText = $"Update to v{version} available (click to download)";
+            IsUpdateAvailable = true;
+        }
+    }
+
+    public void OpenUpdateUrl()
+    {
+        if (!string.IsNullOrEmpty(_downloadUrl))
+        {
+            Process.Start(new ProcessStartInfo(_downloadUrl) { UseShellExecute = true });
+        }
     }
 
     [RelayCommand]

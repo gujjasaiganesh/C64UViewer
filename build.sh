@@ -3,7 +3,6 @@
 # 1. Konfiguration
 PROJ="C64UViewer.csproj"
 APP_NAME="c64uviewer"
-VERSION="1.0.0"
 BUILD_ROOT="dist/linux_pkg"
 
 echo "--- Starte Build-Prozess ---"
@@ -14,6 +13,9 @@ mkdir -p $BUILD_ROOT/usr/share/icons/hicolor/256x256/apps
 mkdir -p $BUILD_ROOT/usr/share/$APP_NAME
 mkdir -p $BUILD_ROOT/usr/local/bin
 mkdir -p $BUILD_ROOT/DEBIAN
+
+echo "Hole Versionsinfo aus der csproj Datei..."
+VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" C64UViewer.csproj)
 
 # 2. App bauen
 echo "Kompiliere Linux Version..."
@@ -31,8 +33,8 @@ ln -s /usr/share/$APP_NAME/$APP_NAME $BUILD_ROOT/usr/local/bin/$APP_NAME
 echo "Package: $APP_NAME
 Version: $VERSION
 Architecture: amd64
-Maintainer: Grütze-Software <info@gruetze-software.de>
-Description: Video-Stream-Viewer for Commodore 64 Ultimate in .NET 8.0
+Maintainer: Grütze-Software
+Description: Small Video-Stream-Viewer for Commodore 64 Ultimate in .NET 8.0
 " > $BUILD_ROOT/DEBIAN/control
 
 # 6. Debian Paket bauen
