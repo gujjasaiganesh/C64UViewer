@@ -90,7 +90,7 @@ This project is licensed under the **MIT License**.
 * **Gideon's Logic:** For creating the amazing Ultimate 64 hardware.
 
 ## 📜 Disclaimer
-RetroScrap 2000 is provided "as is," without warranty of any kind, express or implied. The author is not liable for any damages or losses arising from the use or inability to use the software.
+C64U Slim-Viewer is provided "as is," without warranty of any kind, express or implied. The author is not liable for any damages or losses arising from the use or inability to use the software.
 This software is a hobby project developed in the author's spare time.
 It is not a commercial product and comes with no official support.
 Use it at your own risk.
