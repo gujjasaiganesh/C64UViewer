@@ -117,7 +117,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (available)
         {
             _downloadUrl = url;
-            LatestVersionText = $"Update to v{version} available (click to download)";
+            LatestVersionText = $"Update to {version} available (click to download)";
             IsUpdateAvailable = true;
         }
     }
