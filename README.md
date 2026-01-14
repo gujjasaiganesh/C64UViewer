@@ -1,10 +1,15 @@
 # C64UViewer
+![Platform: Linux | Windows](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 ## Overview
 
 The C64U Slim-Viewer is a specialized tool for Commodore 64 enthusiasts using modern FPGA-based hardware. It provides a seamless way to stream the video output of your device directly to your modern desktop (Linux/Windows) with minimal latency and a "slim" footprint.
 
 Whether you are using the standalone Ultimate 64 (U64/U64E) motherboard or the Ultimate-II+ / II+L cartridge (Gideon's cartridge), this viewer delivers your retro screen to your modern workspace.
+
+<img width="1127" height="851" alt="image" src="https://github.com/user-attachments/assets/e35508cf-0487-4614-9537-279851d2f12d" />
+
 
 ## Key Features
 
