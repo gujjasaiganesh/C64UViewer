@@ -86,5 +86,11 @@ This project is licensed under the **MIT License**.
 
 ## ❤️ Credits
 * Developed by **Grütze-Software**. 
-* **Special Thanks to [Perifractic (RetroRecipes)](https://www.youtube.com/@Perifractic):** For his incredible passion, for bringing the C64 into the modern era, and for inspiring projects that bridge the gap between retro and contemporary computing.
+* **Special Thanks to [Perifractic (Retro Recipes)](https://www.youtube.com/@RetroRecipes):** For his incredible passion, for bringing the C64 into the modern era, and for inspiring projects that bridge the gap between retro and contemporary computing.
 * **Gideon's Logic:** For creating the amazing Ultimate 64 hardware.
+
+## 📜 Disclaimer
+RetroScrap 2000 is provided "as is," without warranty of any kind, express or implied. The author is not liable for any damages or losses arising from the use or inability to use the software.
+This software is a hobby project developed in the author's spare time.
+It is not a commercial product and comes with no official support.
+Use it at your own risk.
