@@ -6,8 +6,8 @@ namespace C64UViewer.Models;
 
 public class AppSettings
 {
-    public string LastIpAddress { get; set; } = "192.168.178.164";
-
+    public int UdpPort { get; set; } = 11000;
+    
     public static string FilePath
     {
         get 

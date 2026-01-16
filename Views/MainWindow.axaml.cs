@@ -27,15 +27,4 @@ public partial class MainWindow : Window
             return true;
         }, TimeSpan.FromMilliseconds(16)); // Synchron zu deinen 60 FPS
     }
-
-    protected override async void OnClosing(WindowClosingEventArgs e)
-    {
-        var vm = DataContext as MainWindowViewModel;
-        if (vm != null && vm.IsStreaming)
-        {
-            Trace.WriteLine("Close running Stream...");
-            await vm.ToggleStream();
-        }
-        base.OnClosing(e);
-    }
 }

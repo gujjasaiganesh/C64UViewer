@@ -13,100 +13,143 @@ using C64UViewer.Services;
 using System.Linq;
 using System.Diagnostics;
 using System.Reflection;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace C64UViewer.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
     public string AppTitle { get; }
-
+    public string StatusColor => IsStreaming ? "SpringGreen" : "Red";
     private DateTime _lastDataReceived = DateTime.MinValue;
     private bool _isDirty = false;
-
     private readonly U64StreamService _streamService = new();
-    // Die Bitmap für die Anzeige (384x272 Pixel inkl. Border)
-    [ObservableProperty]
-    private WriteableBitmap _screenBitmap = new(
-        new PixelSize(384, 272), 
-        new Vector(96, 96), 
-        PixelFormat.Bgra8888, 
-        AlphaFormat.Opaque);
     
-    [ObservableProperty] private string _u64IpAddress = "192.168.178.164";
+    [ObservableProperty] private WriteableBitmap _screenBitmap = new(new PixelSize(384, 272), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Opaque);
     [ObservableProperty] private string _localIpAddress = "";
-    [ObservableProperty] private string _statusMessage = "Ready for Start";
+    [ObservableProperty] private string _statusMessage = "Waiting for UDP data (Start VIC Stream on C64U)...";
     [ObservableProperty] private bool _isStreaming = false;
-   
-    [ObservableProperty]
-    private bool _isBusy = false;
-
+    [ObservableProperty] private int _udpPort = 11000;
+    
     [ObservableProperty]
     private bool _isUpdateAvailable;
 
-    [ObservableProperty]
-    private string _latestVersionText = string.Empty;
-
-    private string _downloadUrl = string.Empty;
-
     private string _version = "";
 
-   public MainWindowViewModel()
+    [ObservableProperty]
+    private string _latestVersionText = string.Empty;
+    private string _downloadUrl = string.Empty;
+
+    public MainWindowViewModel()
     {
+        // 1. Titelleiste aus Assembly-Infos
         var assembly = Assembly.GetExecutingAssembly();
-        // Produktname aus <Product> holen
         var title = assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? "C64U Slim-Viewer";
-            // Version aus <Version> holen (gekürzt auf 3 Stellen, z.B. 1.0.0)
         _version = assembly.GetName().Version?.ToString(3) ?? "1.0.0";
-            // Autor/Firma aus <Authors> (wird in AssemblyCompany gemappt)
         var author = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "Grütze-Software";
         AppTitle = $"{title} v{_version} by {author}";
 
-        // Die Prüfung läuft im Hintergrund, damit das Fenster sofort erscheint
-        Task.Run(async () => await CheckVersionAsync());
-        
-        // 1. Initialisierung
+        // 2. Initialisierung
         ClearScreen();
-        var settings = AppSettings.Load();
-        U64IpAddress = settings.LastIpAddress; // Geladene IP setzen
+        var settings = AppSettings.Load(); 
+        UdpPort = settings.UdpPort;
         LocalIpAddress = GetLocalIpAddress();
+        
+        // 3. UDP-Event verknüpfen
         _streamService.OnRawFrameReceived += ProcessUdpPacket;
         
-        // 2. DATEN-MOTOR (60 FPS)
-        // Dieser Timer sorgt dafür, dass die UI-Bindung die neuen Pixeldaten "sieht"
+        // 4. DATEN-MOTOR (60 FPS Refresh)
+        Trace.WriteLine("Starte UI-Refresh Timer (60 FPS)..."); 
         DispatcherTimer.Run(() =>
         {
             if (_isDirty)
             {
+                // Wir erzwingen die Aktualisierung der UI-Bindung
                 OnPropertyChanged(nameof(ScreenBitmap));
                 _isDirty = false;
             }
             return true; 
-        }, TimeSpan.FromMilliseconds(16));
+        }, TimeSpan.FromMilliseconds(16), DispatcherPriority.MaxValue);
 
-        // 3. WÄCHTER (Watchdog)
-        // WICHTIG: Erhöhe die Zeit auf 7 oder 10 Sekunden. 
-        // 3 Sekunden sind bei hoher CPU-Last (60 FPS Rendering) oft zu knapp,
-        // was zu den ungewollten "Fail: break datastream" Meldungen führt.
-        DispatcherTimer.Run(() =>
-        {
-            if (IsStreaming && _lastDataReceived != DateTime.MinValue)
+        // 5. STATUS-WÄCHTER (Prüft ob Pakete eintreffen)
+        Trace.WriteLine("Starte Streaming-Status Timer (1 Sekunde)...");
+        DispatcherTimer.Run(() => {
+            if (_lastDataReceived != DateTime.MinValue) 
             {
                 var secondsSinceLastData = (DateTime.Now - _lastDataReceived).TotalSeconds;
-                if (secondsSinceLastData > 7) 
+                bool currentlyStreaming = secondsSinceLastData < 2;
+                
+                if (IsStreaming != currentlyStreaming) 
                 {
-                    Dispatcher.UIThread.Post(() => {
-                        StatusMessage = "Fail: break datastream (Check Network/C64U)";
-                        IsStreaming = false; 
-                    });
+                    IsStreaming = currentlyStreaming;
+                    OnPropertyChanged(nameof(StatusColor)); // WICHTIG: Farbe aktualisieren
+                }
+                
+                if (!IsStreaming) 
+                {
+                    StatusMessage = "Waiting for data (Start Stream on C64U)...";
+                    //if (secondsSinceLastData > 5) 
+                        //ClearScreen();
+                } 
+                else 
+                {
+                    StatusMessage = "STREAMING ACTIVE";
                 }
             }
             return true;
-        }, TimeSpan.FromSeconds(2));
+        }, TimeSpan.FromSeconds(1));
 
-        // 4. NETZWERK START
-        // Den Port sofort zu öffnen ist unter Linux korrekt, damit der Socket bereit ist.
-        _streamService.InitializeAndListen(11000); 
-        StatusMessage = "Ready for Start";
+        // 6. SOFORT LAUSCHEN 
+        RestartUdpListener();
+
+        // 7. UPDATE PRÜFEN (asynchron)
+        _ = CheckVersionAsync();
+    }
+
+    // Diese Methode wird vom Toolkit AUTOMATISCH generiert und aufgerufen,
+    // sobald UdpPort (über das UI oder Code) geändert wird.
+    partial void OnUdpPortChanged(int value)
+    {
+            // 1. Erstmal den Stream als inaktiv setzen
+        IsStreaming = false;
+
+        // 2. Validierung: Ports gehen nur bis 65535
+        if (value < 1024 || value > 65535)
+        {
+            StatusMessage = "Invalid Port (1024-65535)";
+            OnPropertyChanged(nameof(StatusColor)); // Erzwingt Rot
+            return;
+        }
+
+        SaveCurrentSettings();
+        Trace.WriteLine($"Wechsle UDP-Lauscher auf neuen Port {value}...");
+        
+        // 3. Den neuen Port initialisieren
+        RestartUdpListener();
+
+    }
+
+    private void RestartUdpListener()
+    {
+        if (UdpPort < 1024 || UdpPort > 65535)
+        {
+            StatusMessage = "Invalid Port (1024-65535)";
+            OnPropertyChanged(nameof(StatusColor)); // Erzwingt Rot
+            return;
+        }
+
+        Trace.WriteLine($"Starte UDP-Lauscher auf Port {UdpPort}...");
+        try
+        {
+            _streamService.InitializeAndListen(UdpPort);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Fehler beim Starten des UDP-Listeners: {ex.Message}");
+            StatusMessage = "Port Error: " + ex.Message;
+            IsStreaming = false;
+            OnPropertyChanged(nameof(StatusColor)); // Sicherstellen, dass es Rot bleibt
+        }
     }
 
     public async Task CheckVersionAsync()
@@ -131,157 +174,86 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ShowHelp()
+    public void ShowHelp()
     {
         var helpWin = new Views.HelpWindow();
-        // Wenn du eine Referenz zum Hauptfenster hast, kannst du .ShowDialog(owner) nutzen
-        helpWin.Show(); 
+        helpWin.Show();
     }
 
-
-    [RelayCommand]
-    private async Task StartStream()
+    public void SaveCurrentSettings()
     {
-       try
-        {
-            IsBusy = true;
-            // Speichern, wenn der User auf Start drückt
-            new AppSettings { LastIpAddress = U64IpAddress }.Save();
-            if (!IsStreaming)
-            {
-                StatusMessage = ".";
-                await _streamService.SendStartSignal(U64IpAddress, LocalIpAddress, 11000);
-                
-                // Der UDP-Listener wurde bereits im Konstruktor gestartet
-                IsStreaming = true;
-                StatusMessage = "Stream active...";
-            }
-            else
-            {
-                StatusMessage = "Stopping stream...";
-                await _streamService.SendStopSignal(U64IpAddress);
-                IsStreaming = false;
-                ClearScreen();
-                StatusMessage = "Ready for Start";
-            }
-        }
-        catch (Exception ex)
-        {
-            IsStreaming = false;
-            ClearScreen();
-            StatusMessage = $"Fail: {ex.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    [RelayCommand]
-    public async Task ToggleStream()
-    {
-        if (IsStreaming)
-        {
-            await _streamService.SendStopSignal(U64IpAddress);
-            IsStreaming = false;
-            StatusMessage = "Stream stopped";
-            ClearScreen();
-        }
-        else
-        {
-            await StartStream(); // Ruft die obige Logik auf
-        }
+        Trace.WriteLine($"Speichere Einstellungen: UDP Port = {UdpPort}");
+        var settings = new AppSettings();
+        settings.UdpPort = UdpPort;
+        settings.Save();
     }
 
     private string GetLocalIpAddress()
     {
-        try
-        {
-            // Wir holen uns alle Netzwerk-Schnittstellen (LAN, WLAN, etc.)
-            var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
-            
-            foreach (var ni in interfaces)
-            {
-                // Wir ignorieren Loopback (127.0.0.1) und inaktive Schnittstellen
-                if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up && 
-                    ni.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
-                {
-                    var props = ni.GetIPProperties();
-                    // Wir suchen die erste IPv4 Adresse, die mit 192. anfängt
-                    var ip = props.UnicastAddresses
-                        .FirstOrDefault(a => a.Address.AddressFamily == AddressFamily.InterNetwork 
-                                        && a.Address.ToString().StartsWith("192."));
+        try {
+            using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+            socket.Connect("8.8.8.8", 65530); // Verbindet nicht echt, hilft nur bei IP-Wahl
+            return (socket.LocalEndPoint as IPEndPoint)?.Address.ToString() ?? "127.0.0.1";
+        } catch { return "IP not found"; }
+    }
 
-                    if (ip != null)
-                    {
-                        return ip.Address.ToString();
-                    }
+    private void ClearScreen()
+    {
+        using (var lockedBitmap = ScreenBitmap.Lock())
+        {
+            unsafe
+            {
+                uint* ptr = (uint*)lockedBitmap.Address;
+                // Alles auf Schwarz setzen (Alpha: 255, R: 0, G: 0, B: 0)
+                for (int i = 0; i < 384 * 272; i++) ptr[i] = 0xFF000000;
+            }
+        }
+        // Explizit triggern, damit das Schwarz angezeigt wird
+        OnPropertyChanged(nameof(ScreenBitmap));
+    }
+
+    private void ProcessUdpPacket(byte[] data)
+    {
+        _lastDataReceived = DateTime.Now;
+        
+        // Ein U64 Video-Paket hat 12 Bytes Header + 768 Bytes Daten = 780 Bytes
+        if (data == null || data.Length < 12) return;
+
+        using (var lockedBitmap = ScreenBitmap.Lock())
+        {
+            unsafe
+            {
+                uint* backBuffer = (uint*)lockedBitmap.Address;
+                
+                // 1. Zeilennummer aus Byte 4 & 5 lesen (Little Endian)
+                // Bit 15 der Zeilennummer ist das "Last Packet" Flag, das maskieren wir weg
+                int lineNumber = (data[5] << 8 | data[4]) & 0x7FFF;
+                
+                // 2. Start-Pixel im Bild berechnen (Zeile * Breite)
+                int startPixelIndex = lineNumber * 384;
+                
+                int headerOffset = 12;
+                int pixelDataLength = data.Length - headerOffset;
+
+                for (int i = 0; i < pixelDataLength; i++)
+                {
+                    byte val = data[i + headerOffset];
+
+                    // Ein Byte enthält zwei 4-Bit Pixel (Nibbles)
+                    // Erstes Pixel (Untere 4 Bits)
+                    int p1 = startPixelIndex + (i * 2);
+                    if (p1 < (384 * 272))
+                        backBuffer[p1] = C64Colors.Palette[(byte)(val & 0x0F)];
+
+                    // Zweites Pixel (Obere 4 Bits)
+                    int p2 = p1 + 1;
+                    if (p2 < (384 * 272))
+                        backBuffer[p2] = C64Colors.Palette[(byte)(val >> 4)];
                 }
             }
         }
-        catch
-        {
-            return "IP not ascertainable";
-        }
+        _isDirty = true;
 
-        return "No 192.x Adress found";
+        
     }
-
-private void ClearScreen()
-{
-    using (var lockedBitmap = ScreenBitmap.Lock())
-    {
-        unsafe
-        {
-            uint* ptr = (uint*)lockedBitmap.Address;
-            // Alles auf Schwarz setzen (Alpha: 255, R: 0, G: 0, B: 0)
-            for (int i = 0; i < 384 * 272; i++) ptr[i] = 0xFF000000;
-        }
-    }
-    // Explizit triggern, damit das Schwarz angezeigt wird
-    OnPropertyChanged(nameof(ScreenBitmap));
-}
-
-private void ProcessUdpPacket(byte[] data)
-{
-    _lastDataReceived = DateTime.Now;
-    
-    // Ein U64 Video-Paket hat 12 Bytes Header + 768 Bytes Daten = 780 Bytes
-    if (data == null || data.Length < 12) return;
-
-    using (var lockedBitmap = ScreenBitmap.Lock())
-    {
-        unsafe
-        {
-            uint* backBuffer = (uint*)lockedBitmap.Address;
-            
-            // 1. Zeilennummer aus Byte 4 & 5 lesen (Little Endian)
-            // Bit 15 der Zeilennummer ist das "Last Packet" Flag, das maskieren wir weg
-            int lineNumber = (data[5] << 8 | data[4]) & 0x7FFF;
-            
-            // 2. Start-Pixel im Bild berechnen (Zeile * Breite)
-            int startPixelIndex = lineNumber * 384;
-            
-            int headerOffset = 12;
-            int pixelDataLength = data.Length - headerOffset;
-
-            for (int i = 0; i < pixelDataLength; i++)
-            {
-                byte val = data[i + headerOffset];
-
-                // Ein Byte enthält zwei 4-Bit Pixel (Nibbles)
-                // Erstes Pixel (Untere 4 Bits)
-                int p1 = startPixelIndex + (i * 2);
-                if (p1 < (384 * 272))
-                    backBuffer[p1] = C64Colors.Palette[(byte)(val & 0x0F)];
-
-                // Zweites Pixel (Obere 4 Bits)
-                int p2 = p1 + 1;
-                if (p2 < (384 * 272))
-                    backBuffer[p2] = C64Colors.Palette[(byte)(val >> 4)];
-            }
-        }
-    }
-    _isDirty = true;
-}
 }
