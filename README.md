@@ -2,7 +2,7 @@
 [![Platform: Linux | Windows](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](#)
 
-A high-performance, lightweight remote video stream viewer specifically designed for the **Commodore 64 Ultimate (U64/U64E)**. Built with .NET 8 and Avalonia UI.
+A lightweight, high-performance video viewer for the Ultimate 64 (U64) and C64 Ultimate. This tool utilizes the hardware's built-in VIC-stream to display your C64 screen directly on your PC with minimal latency—no capture card required. Built with .NET 8 and Avalonia UI.
 
 <img width="864" height="682" alt="grafik" src="https://github.com/user-attachments/assets/28e98855-bf88-4be1-96b0-f32d154cf99f" />
 
@@ -11,7 +11,7 @@ A high-performance, lightweight remote video stream viewer specifically designed
 The **C64U Slim-Viewer** allows you to stream the VIC-II video output of your Ultimate 64 directly to your modern linux or windows desktop via your local network.
 
 ### Key Features
-* 🚀 **Low Latency:** Optimized for a responsive experience using the U64's native data streams.
+* 🚀 **Low Latency:** The tool operates as a passive UDP listener. It no longer sends active control commands to the hardware, minimizing network overhead and avoiding conflicts with other tools. You control the stream directly from your C64. As soon as the hardware starts sending data, the viewer displays the frame.
 * 🪶 **Minimalist Design:** A distraction-free window perfect for coding or gaming.
 * 🔄 **Auto-Update Check:** In-app notifications for new GitHub releases.
 * 🐧 **Cross-Platform:** Native support for Linux (.deb) and Windows.
@@ -36,12 +36,7 @@ Follow these steps to establish a connection between your C64U and this viewer.
 * Ensure your **Commodore 64 Ultimate (C64U)** is on the same local network as this PC.
 * **Important:** Your C64U must be connected via **LAN**. Disable WLAN on the C64U to ensure a stable stream.
 
-### 2. IP Configuration
-* Find the IP address of your C64U in the hardware settings.
-* Enter this IP into the top-left corner of the C64U Slim-Viewer.
-* *Recommendation:* Configure your router to assign a static IP address to your C64U.
-
-### 3. Firewall Settings
+### 2. Firewall Settings
 * Ensure that **Port 11000 for UDP** is open in your PC's firewall. This port is required to receive the incoming data stream.
 * **Windows:** You usually don't need to do anything. Windows Firewall will automatically ask for permission on the first startup. Ensure you allow access.
 * <img width="400" height="400" alt="grafik" src="https://github.com/user-attachments/assets/86ad588c-1366-42ca-b1be-bd057872ba39" />
@@ -49,8 +44,7 @@ Follow these steps to establish a connection between your C64U and this viewer.
     ```bash
     sudo ufw allow 11000/udp
     ```
-
-### 4. Configure the C64U Hardware
+### 3. Configure the C64U Hardware
 Now, you need to tell your Ultimate 64 where to send the video data:
 
 **Step A: Configure Data Streams**
@@ -67,8 +61,6 @@ Now, you need to tell your Ultimate 64 where to send the video data:
 * Press **Enter**.
 <img width="600" height="378" alt="grafik" src="https://github.com/user-attachments/assets/06b160c0-1922-40c4-be4b-4f82b7a9f360" />
 
-### 5. Final Step
-* Click the **'Start Stream'** button within the C64U Slim-Viewer application.
 
 ---
 
